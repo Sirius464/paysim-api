@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaySim - Simulation de Paiement</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .transaction-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .amount-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .amount-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .amount-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .currency {
+            color: #999;
+            font-size: 20px;
+        }
+
+        .simulation-section {
+            margin-top: 30px;
+        }
+
+        .simulation-title {
+            text-align: center;
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(17, 153, 142, 0.3);
+        }
+
+        .btn-failure {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            color: white;
+        }
+
+        .btn-failure:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(238, 9, 121, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .security-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 PaySim</h1>
+            <p>Simulateur de Passerelle de Paiement</p>
+        </div>
+
+        <div class="content">
+            <div class="transaction-info">
+                <div class="info-row">
+                    <span class="info-label">Transaction ID</span>
+                    <span class="info-value">{{ transaction.tx_id }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Référence Client</span>
+                    <span class="info-value">{{ transaction.client_reference }}</span>
+                </div>
+                {% if transaction.customer_email %}
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ transaction.customer_email }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="amount-display">
+                <div class="amount-label">Montant à payer</div>
+                <div>
+                    <span class="amount-value">{{ transaction.amount }}</span>
+                    <span class="currency">{{ transaction.currency }}</span>
+                </div>
+            </div>
+
+            <div class="simulation-section">
+                <h2 class="simulation-title">Simuler le résultat du paiement</h2>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="processPayment('SUCCESS')">
+                        ✓ Succès
+                    </button>
+                    <button class="btn btn-failure" onclick="processPayment('FAILED')">
+                        ✗ Échec
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Traitement en cours...</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+        </div>
+
+        <div class="footer">
+            <p>Environnement de simulation uniquement</p>
+            <span class="security-badge">🔐 Sécurisé par HMAC-SHA256</span>
+        </div>
+    </div>
+
+    <script>
+        // Dans payment_form.html
+const txId = "{{ transaction.tx_id }}";
+// L'URL doit correspondre à votre configuration d'URLs
+const processUrl = `/api/paysim/process/${txId}/`;
+
+async function processPayment(status) {
+    const buttons = document.querySelectorAll('.btn');
+    const loading = document.querySelector('.loading');
+    const alert = document.getElementById('alert');
+
+    // Désactiver les boutons
+    buttons.forEach(btn => btn.disabled = true);
+    loading.classList.add('active');
+    alert.classList.remove('active');
+
+    try {
+        const payload = { status };
+        
+        // En cas d'échec, ajouter une raison
+        if (status === 'FAILED') {
+            payload.failure_reason = 'Fonds insuffisants (simulation)';
+        }
+
+        const response = await fetch(processUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Le token CSRF est nécessaire si vous n'utilisez pas @csrf_exempt
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert.className = 'alert alert-success active';
+            alert.innerHTML = `
+                <strong>✓ ${data.message}</strong><br>
+                <small>Le client recevra la notification WebHook sous peu.</small>
+            `;
+            
+            // Redirection après 3 secondes
+            setTimeout(() => {
+                window.location.href = '/api/paysim/';
+            }, 3000);
+        } else {
+            throw new Error(data.error || 'Erreur inconnue');
+        }
+    } catch (error) {
+        alert.className = 'alert alert-error active';
+        alert.innerHTML = `<strong>✗ Erreur:</strong> ${error.message}`;
+        buttons.forEach(btn => btn.disabled = false);
+    } finally {
+        loading.classList.remove('active');
+    }
+}
+
+// Fonction utilitaire pour récupérer le CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+    console.log('Transaction ID:', txId);
+    console.log('Process URL:', processUrl);
+    console.log('CSRF Token:', getCookie('csrftoken'));
+    </script>
+</body>
+</html>
